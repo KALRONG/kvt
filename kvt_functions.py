@@ -9,9 +9,9 @@ def print_json(response, method):
             if response["response_code"]==0:
                 response_code="File wasn't in the virus total database."
             elif response["response_code"]==1:
-                response_code="File is still queued for scanning."
-            elif response["response_code"]==-2:
                 response_code="File was already in the virus total database."
+            elif response["response_code"]==-2:
+                response_code="File is still queued for scanning."
             else:
                 return "An error has happened"
         print "Response code: "+response_code
