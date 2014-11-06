@@ -10,6 +10,7 @@ You will need to create a file with you api keys, the script will use private ke
 Example of api_keys.txt:
 
 free,46e4ac2d7ac1<missing part of the key>1185331138a4c5353
+
 private,none
 
 If several keys from a type appear in the file only the first one will be used. In the future you will be asked to select which key you may want to use.
