@@ -1,6 +1,43 @@
-import postfile, os, sys, json
+import postfile, os, sys, json, urllib, urllib2
 
 host = "www.virustotal.com"
+
+def retrieve_report (md5, apikey):
+    url = "https://www.virustotal.com/vtapi/v2/file/report"
+    parameters = {"resource": md5, "apikey": apikey}
+    data = urllib.urlencode(parameters)
+    req = urllib2.Request(url, data)
+    response = urllib2.urlopen(req)
+    response = response.read()
+    response=json.loads(response)
+    
+    if response["response_code"]==0:
+            response_code="File wasn't in the virus total database."
+    elif response["response_code"]==1:
+            response_code="File was already in the virus total database."
+    elif response["response_code"]==-2:
+            response_code="File is still queued for scanning."
+    else:
+            return "An error has happened"
+    
+    print "Scan date: "+response["scan_date"]
+    print "Response code: "+response_code
+    print "Verbose Message: "+response["verbose_msg"]
+    print "Resource: "+response["resource"]
+    print "Scan Id: "+response["scan_id"]
+    print "Permalink: "+response["permalink"]
+    print "Hashes:"
+    print "\tSHA256: "+response["sha256"]
+    print "\tSHA1: "+response["sha1"]
+    print "\tMD5: "+response["md5"]
+    print "Positives: "+str(response["positives"])+"/"+str(response["total"])
+    print "Scanners:\n"
+    
+    for fields in response["scans"]:
+        print fields+":"
+        for scan in response["scans"][fields]:
+            print "\t"+scan.title()+":"+str(response["scans"][fields][scan])
+
 
 def print_json(response, method):
     response=json.loads(response)
@@ -23,6 +60,7 @@ def print_json(response, method):
         print "\tSHA256: "+response["sha256"]
         print "\tSHA1: "+response["sha1"]
         print "\tMD5: "+response["md5"]
+        return response["response_code"], response["md5"]
     else:
         return "An error has happened"
         
