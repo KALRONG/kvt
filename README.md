@@ -18,3 +18,6 @@ If several keys from a type appear in the file only the first one will be used. 
 Im open to suggestions so feel free to get in touch :)
 
 And most of all, thanks for trying my first project!
+
+Thanks to the people from this post that provided the postfile.py library Im using :D
+http://code.activestate.com/recipes/146306/
