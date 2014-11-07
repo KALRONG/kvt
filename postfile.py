@@ -1,3 +1,6 @@
+#Thanks to the people from this post that provided the postfile.py library Im using :D
+#http://code.activestate.com/recipes/146306/
+
 import httplib, mimetypes
 
 def post_multipart(host, selector, fields, files):
