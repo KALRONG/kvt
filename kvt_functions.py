@@ -2,9 +2,27 @@ import postfile, os, sys, json, urllib, urllib2
 
 host = "www.virustotal.com"
 
-def retrieve_report (md5, apikey):
+def send_url (url, apikey):
+    url = "https://www.virustotal.com/vtapi/v2/url/scan"
+    parameters = {"url": url, "apikey": apikey}
+    data = urllib.urlencode(parameters)
+    req = urllib2.Request(url, data)
+    response = urllib2.urlopen(req)
+    response = response.read()
+    return print_json(response, "url") 
+
+def resend_file (resource, apikey):
+    url = "https://www.virustotal.com/vtapi/v2/file/rescan"
+    parameters = {"resource": resource, "apikey": apikey}
+    data = urllib.urlencode(parameters)
+    req = urllib2.Request(url, data)
+    response = urllib2.urlopen(req)
+    response = response.read()
+    return print_json(response, "resend") 
+
+def retrieve_report (resource, apikey):
     url = "https://www.virustotal.com/vtapi/v2/file/report"
-    parameters = {"resource": md5, "apikey": apikey}
+    parameters = {"resource": resource, "apikey": apikey}
     data = urllib.urlencode(parameters)
     req = urllib2.Request(url, data)
     response = urllib2.urlopen(req)
@@ -13,7 +31,8 @@ def retrieve_report (md5, apikey):
 
 def print_json(response, method):
     response=json.loads(response)
-    if method in ("file", "retrieve"):
+    
+    if method in ("file", "retrieve"):   
         if response["response_code"] in (0, 1, -2):
             if response["response_code"]==0:
                 response_code="File wasn't in the virus total database."
@@ -22,8 +41,7 @@ def print_json(response, method):
             elif response["response_code"]==-2:
                 response_code="File is still queued for scanning."
             else:
-                return "An error has happened"
-           
+                return "An error has happened" 
             print "Response code: "+response_code
             print "Verbose Message: "+response["verbose_msg"]
             print "Resource: "+response["resource"]
@@ -42,9 +60,42 @@ def print_json(response, method):
                     print fields+":"
                     for scan in response["scans"][fields]:
                         print "\t"+scan.title()+":"+str(response["scans"][fields][scan])
+    elif method in ("resend"):
+        if response["response_code"] in (0, 1, -1):
+            if response["response_code"]==0:
+                response_code="File wasn't in the virus total database."
+            elif response["response_code"]==1:
+                response_code="File succesfully queued for rescaning."
+            elif response["response_code"]==-1:
+               return "Unexpected Error"
+            else:
+                return "An error has happened"
+            print "Response code: "+response_code
+            print "Resource: "+response["resource"]
+            print "Scan Id: "+response["scan_id"]
+            print "Permalink: "+response["permalink"]
+            print "Hashes:"
+            print "\tSHA256: "+response["sha256"]
+    elif method in ("url"):
+        if response["response_code"] in (0, 1, -2):
+            if response["response_code"]==0:
+                response_code="Url wasn't in the virus total database."
+            elif response["response_code"]==1:
+                response_code="Url was already in the virus total database."
+            elif response["response_code"]==-2:
+                response_code="Url is still queued for scanning."
+            else:
+                return "An error has happened" 
+            print "Response code: "+response_code
+            print "Verbose Message: "+response["verbose_msg"]
+            print "Resource: "+response["resource"]
+            print "Url: "+response["url"]
+            print "Scan Id: "+response["scan_id"]
+            print "Scan date: "+response["scan_date"]
+            print "Permalink: "+response["permalink"]
     else:
         return "An error has happened"
-    return response["response_code"], response["md5"]  
+    return response["response_code"], response["resource"]  
 
 def send_file(file_path, file_name, fields):
     selector = "https://www.virustotal.com/vtapi/v2/file/scan"
