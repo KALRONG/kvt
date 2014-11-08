@@ -15,6 +15,15 @@ import postfile, os, sys, json, urllib, urllib2
 
 host = "www.virustotal.com"
 
+def retrieve_url (resource, apikey):
+    url = "https://www.virustotal.com/vtapi/v2/url/report"
+    parameters = {"resource": resource, "apikey": apikey}
+    data = urllib.urlencode(parameters)
+    req = urllib2.Request(url, data)
+    response = urllib2.urlopen(req)
+    response = response.read()
+    return print_json(response, "retrieve_url") 
+
 def send_url (url, apikey):
     url = "https://www.virustotal.com/vtapi/v2/url/scan"
     parameters = {"url": url, "apikey": apikey}
@@ -89,7 +98,7 @@ def print_json(response, method):
             print "Permalink: "+response["permalink"]
             print "Hashes:"
             print "\tSHA256: "+response["sha256"]
-    elif method in ("url"):
+    elif method in ("url", "retrieve_url"):
         if response["response_code"] in (0, 1, -2):
             if response["response_code"]==0:
                 response_code="Url wasn't in the virus total database."
@@ -97,15 +106,23 @@ def print_json(response, method):
                 response_code="Url was already in the virus total database."
             elif response["response_code"]==-2:
                 response_code="Url is still queued for scanning."
-            else:
-                return "An error has happened" 
-            print "Response code: "+response_code
-            print "Verbose Message: "+response["verbose_msg"]
-            print "Resource: "+response["resource"]
-            print "Url: "+response["url"]
-            print "Scan Id: "+response["scan_id"]
-            print "Scan date: "+response["scan_date"]
-            print "Permalink: "+response["permalink"]
+        else:
+            return "An error has happened" 
+        print "Response code: "+response_code
+        print "Verbose Message: "+response["verbose_msg"]
+        print "Resource: "+response["resource"]
+        print "Url: "+response["url"]
+        print "Scan Id: "+response["scan_id"]
+        print "Scan date: "+response["scan_date"]
+        print "Permalink: "+response["permalink"]
+        if method=="retrieve_url":
+            print "Positives: "+str(response["positives"])+"/"+str(response["total"])
+            print "Scanners:\n"
+    
+            for fields in response["scans"]:
+                print fields+":"
+                for scan in response["scans"][fields]:
+                    print "\t"+scan.title()+":"+str(response["scans"][fields][scan])
     else:
         return "An error has happened"
     return response["response_code"], response["resource"]  
