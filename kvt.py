@@ -56,5 +56,8 @@ else:
                 sys.exit(0)
     elif args.url!=None:
         print "Sending url "+args.url+" ..."
-        kvt_functions.send_url(args.url, apikey)
+        reply=kvt_functions.send_url(args.url, apikey)
+        if reply[0]==1:
+            print "\nUrl was already scanned, getting the latest report...\n"
+            kvt_functions.retrieve_url(reply[1], apikey)
         
